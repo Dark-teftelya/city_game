@@ -1,32 +1,33 @@
-name: Build SFML Windows EXE
+name: Build SFML Project
 
-on: [push]
+on:
+  push:
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-      - name: Install vcpkg
-        run: |
-          git clone https://github.com/microsoft/vcpkg
-          .\vcpkg\bootstrap-vcpkg.bat
-          .\vcpkg\vcpkg install sfml
+    - name: Install MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: mingw-w64-x86_64-gcc mingw-w64-x86_64-sfml
 
-      - name: Build project
-        shell: cmd
-        run: |
-          g++ -std=c++17 main.cpp MenuState.cpp GameState.cpp RulesState.cpp SettingsState.cpp ^
-          -I vcpkg\installed\x64-windows\include ^
-          -L vcpkg\installed\x64-windows\lib ^
-          -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio ^
-          -o gorodki.exe
+    - name: Build project
+      shell: msys2 {0}
+      run: |
+        g++ -std=c++17 main.cpp MenuState.cpp GameState.cpp RulesState.cpp SettingsState.cpp \
+        -I/mingw64/include \
+        -L/mingw64/lib \
+        -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio \
+        -o gorodki.exe
 
-      - name: Upload EXE
-        uses: actions/upload-artifact@v4
-        with:
-          name: gorodki
-          path: gorodki.exe
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: gorodki-exe
+        path: gorodki.exe
