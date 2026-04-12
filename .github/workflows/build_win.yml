@@ -1,28 +1,53 @@
-name: Build SFML App (stable)
+name: Build SFML App
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Download SFML 2.6.2
+      # ====== Install MinGW toolchain ======
+      - name: Setup MSYS2 + MinGW
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-make
+            mingw-w64-x86_64-ninja
+            curl
+            unzip
+
+      # ====== Download SFML 2.6.2 ======
+      - name: Download SFML
+        shell: pwsh
         run: |
-          curl -L -o sfml.zip https://www.sfml-dev.org/files/SFML-2.6.2-windows-gcc-12.2.0-mingw-64-bit.zip
-          tar -xf sfml.zip
+          Invoke-WebRequest `
+            -Uri "https://www.sfml-dev.org/files/SFML-2.6.2-windows-gcc-12.2.0-mingw-64-bit.zip" `
+            -OutFile sfml.zip
 
-      - name: Build
+          Expand-Archive sfml.zip -DestinationPath sfml
+
+      # ====== Build project ======
+      - name: Build project
+        shell: msys2 {0}
         run: |
-          g++ -std=c++17 main.cpp MenuState.cpp GameState.cpp RulesState.cpp SettingsState.cpp -o app.exe ^
-          -ISFML-2.6.2/include ^
-          -LSFML-2.6.2/lib ^
-          -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
+          g++ -std=c++17 main.cpp MenuState.cpp GameState.cpp RulesState.cpp SettingsState.cpp ^
+          -Isfml/SFML-2.6.2/include ^
+          -LsFML-2.6.2/lib ^
+          -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio ^
+          -o app.exe
 
+      # ====== Upload artifact ======
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
-          name: gorodki
+          name: gorodki-build
           path: app.exe
