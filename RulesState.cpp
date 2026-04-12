@@ -1,4 +1,5 @@
 #include "RulesState.h"
+#include "StateManager.h"
 #include "MenuState.h"
 #include <memory>
 

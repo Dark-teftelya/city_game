@@ -1,10 +1,7 @@
 #pragma once
 #include <memory>
-#include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
 #include "GameConfig.h"
-
-class State;
+#include "State.h"
 
 class StateManager {
 private:
@@ -13,14 +10,30 @@ private:
 
 public:
     GameConfig config;
-    sf::Music music;
-    sf::RenderWindow* window = nullptr;
 
-    void setState(std::unique_ptr<State> newState);
+    void setState(std::unique_ptr<State> newState) {
+        currentState = std::move(newState);
 
-    void handleInput(sf::Event& event);
-    void update(float dt);
-    void draw(sf::RenderWindow& window);
+        if (!currentState)
+            running = false;
+    }
 
-    bool isRunning() const { return running; }
+    void handleInput(sf::Event& event) {
+        if (currentState)
+            currentState->handleInput(event);
+    }
+
+    void update(float dt) {
+        if (currentState)
+            currentState->update(dt);
+    }
+
+    void draw(sf::RenderWindow& window) {
+        if (currentState)
+            currentState->draw(window);
+    }
+
+    bool isRunning() const {
+        return running;
+    }
 };

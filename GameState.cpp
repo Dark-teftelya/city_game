@@ -1,11 +1,12 @@
 #include "GameState.h"
 #include "MenuState.h"
+#include "StateManager.h"
 #include <memory>
 #include <cmath>
 
 GameState::GameState(StateManager& manager) : State(manager) {
     if (!font.loadFromFile("media/arial.ttf")) {
-        // fallback, если шрифт не найден
+        // fallback если шрифт не найден
     }
 
     field.setSize(sf::Vector2f(340.f, 340.f));
@@ -54,11 +55,10 @@ void GameState::resetGorodki(int level) {
 
     const float width   = 36.f;
     const float height  = 36.f;
-    const float spacing = 12.f;        // ← отступ между фигурами
-    const float baseY   = groundY - height;   // все стоят точно на полу
+    const float spacing = 12.f;
+    const float baseY   = groundY - height;
 
-    if (level == 1) { // Пирамида (3 ряда)
-        // Нижний ряд (3 фигуры)
+    if (level == 1) { // Пирамида
         float startX = 310.f;
         for (int i = 0; i < 3; ++i) {
             Gorodok g;
@@ -72,7 +72,6 @@ void GameState::resetGorodki(int level) {
             gorodki.push_back(g);
         }
 
-        // Средний ряд (2 фигуры, сдвинуты по центру)
         startX = 322.f;
         for (int i = 0; i < 2; ++i) {
             Gorodok g;
@@ -86,7 +85,6 @@ void GameState::resetGorodki(int level) {
             gorodki.push_back(g);
         }
 
-        // Верхний ряд (1 фигура)
         Gorodok g;
         g.shape.setSize({width, height});
         g.shape.setPosition(358.f, baseY - height * 2);
@@ -97,7 +95,7 @@ void GameState::resetGorodki(int level) {
         g.isAlive = true;
         gorodki.push_back(g);
     }
-    else if (level == 2) { // Линия (5 фигур с отступами)
+    else if (level == 2) { // Линия
         float startX = 290.f;
         for (int i = 0; i < 5; ++i) {
             Gorodok g;
@@ -111,7 +109,7 @@ void GameState::resetGorodki(int level) {
             gorodki.push_back(g);
         }
     }
-    else { // Квадрат 2×2
+    else { // Квадрат 2x2
         float startX = 310.f;
         float startY = baseY;
         for (int y = 0; y < 2; ++y) {
@@ -132,14 +130,20 @@ void GameState::resetGorodki(int level) {
 
 void GameState::handleInput(sf::Event& event) {
     if (event.type == sf::Event::KeyPressed) {
-        if (event.key.code == sf::Keyboard::Escape) manager.setState(std::make_unique<MenuState>(manager));
-        if (event.key.code == sf::Keyboard::R) resetGorodki(currentLevel);
+        if (event.key.code == sf::Keyboard::Escape) 
+            manager.setState(std::make_unique<MenuState>(manager));
+
+        if (event.key.code == sf::Keyboard::R) 
+            resetGorodki(currentLevel);
+
         if (event.key.code == sf::Keyboard::Num1) resetGorodki(1);
         if (event.key.code == sf::Keyboard::Num2) resetGorodki(2);
         if (event.key.code == sf::Keyboard::Num3) resetGorodki(3);
 
-        if (event.key.code == sf::Keyboard::Left)  angle = std::max(20.f, angle - 2.f);
-        if (event.key.code == sf::Keyboard::Right) angle = std::min(70.f, angle + 2.f);
+        if (event.key.code == sf::Keyboard::Left)  
+            angle = std::max(20.f, angle - 2.f);
+        if (event.key.code == sf::Keyboard::Right) 
+            angle = std::min(70.f, angle + 2.f);
     }
 
     if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space && !isThrowing) {
@@ -171,7 +175,6 @@ void GameState::updatePhysics(float dt) {
     bat.move(batVelocity * dt);
     batVelocity.y += 1050.f * dt;
 
-    // Столкновение биты с городками
     for (auto& g : gorodki) {
         if (!g.isAlive) continue;
         if (bat.getGlobalBounds().intersects(g.shape.getGlobalBounds())) {
@@ -182,7 +185,6 @@ void GameState::updatePhysics(float dt) {
         }
     }
 
-    // Физика + столкновения между городками
     for (auto& g : gorodki) {
         if (!g.isAlive) continue;
 
@@ -190,11 +192,9 @@ void GameState::updatePhysics(float dt) {
         g.velocity.y += 720.f * dt;
         g.velocity *= 0.965f;
 
-        // Столкновения между городками (AABB)
         for (auto& other : gorodki) {
             if (&g == &other || !other.isAlive) continue;
             if (g.shape.getGlobalBounds().intersects(other.shape.getGlobalBounds())) {
-                // Раздвигаем по вертикали
                 if (g.shape.getPosition().y < other.shape.getPosition().y) {
                     g.shape.setPosition(g.shape.getPosition().x, other.shape.getPosition().y - g.shape.getSize().y);
                 } else {
@@ -205,7 +205,6 @@ void GameState::updatePhysics(float dt) {
             }
         }
 
-        // Пол
         if (g.shape.getPosition().y + g.shape.getSize().y >= groundY) {
             g.shape.setPosition(g.shape.getPosition().x, groundY - g.shape.getSize().y);
             g.velocity.y = 0.f;
@@ -216,21 +215,19 @@ void GameState::updatePhysics(float dt) {
 
     if (bat.getPosition().x > 950.f || bat.getPosition().y > 700.f) {
         isThrowing = false;
-        bat.setPosition(100.f, 440.f);   // ← бита дальше от городков
+        bat.setPosition(100.f, 440.f);
     }
 }
 
 void GameState::update(float dt) {
     updatePhysics(dt);
 
-    // Выбито и Уровень — в ЛЕВОМ верхнем углу
     scoreText.setPosition(20.f, 20.f);
     scoreText.setString(L"Выбито: " + sf::String(std::to_string(score) + " / 5"));
 
     levelText.setPosition(20.f, 65.f);
     levelText.setString(L"Уровень " + sf::String(std::to_string(currentLevel)));
 
-    // Инструкции — в ПРАВОМ верхнем углу
     instructionText.setPosition(520.f, 20.f);
     instructionText.setString(
         L"Space — сила\n"
