@@ -10,22 +10,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install SFML 2
+      - name: Install dependencies (MinGW + CMake)
         run: |
-          git clone https://github.com/SFML/SFML.git
+          choco install mingw -y
+          choco install cmake -y
+
+      - name: Clone SFML 2.6
+        run: |
+          git clone --branch 2.6.x https://github.com/SFML/SFML.git
           cd SFML
-          git checkout 2.6.x
           mkdir build
           cd build
-          cmake -G "MinGW Makefiles" -DCMAKE_INSTALL_PREFIX=../../SFML-install ..
+          cmake .. -G "MinGW Makefiles" -DCMAKE_INSTALL_PREFIX=../../SFML-install
           cmake --build . --target install
 
       - name: Build project
         run: |
-          g++ -std=c++17 main.cpp SettingsState.cpp \
-          -I SFML-install/include \
-          -L SFML-install/lib \
-          -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio \
+          g++ -std=c++17 main.cpp SettingsState.cpp ^
+          -I SFML-install/include ^
+          -L SFML-install/lib ^
+          -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio ^
           -o app.exe
 
       - name: Upload EXE
