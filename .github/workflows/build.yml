@@ -1,4 +1,4 @@
-name: Build EXE
+name: Build SFML Windows EXE
 
 on: [push]
 
@@ -7,12 +7,25 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Build
-        run: g++ -std=c++17 main.cpp MenuState.cpp GameState.cpp RulesState.cpp SettingsState.cpp -o gorodki.exe
+      - name: Install vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg
+          .\vcpkg\bootstrap-vcpkg.bat
+          .\vcpkg\vcpkg install sfml
 
-      - name: Upload artifact
+      - name: Build project
+        shell: cmd
+        run: |
+          g++ -std=c++17 main.cpp MenuState.cpp GameState.cpp RulesState.cpp SettingsState.cpp ^
+          -I vcpkg\installed\x64-windows\include ^
+          -L vcpkg\installed\x64-windows\lib ^
+          -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio ^
+          -o gorodki.exe
+
+      - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
           name: gorodki
