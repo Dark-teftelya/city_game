@@ -1,38 +1,40 @@
-name: Build SFML App (Windows)
+name: Build Gorodki (Windows)
 
 on:
   push:
+    branches: [ main, master ]
   pull_request:
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
 
     steps:
-      # 1. Забираем код
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Устанавливаем MSYS2 + SFML (САМЫЙ СТАБИЛЬНЫЙ СПОСОБ)
       - name: Setup MSYS2 and install SFML
         uses: msys2/setup-msys2@v2
         with:
+          msystem: MINGW64
           update: true
           install: >-
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-sfml
 
-      # 3. Сборка проекта
       - name: Build project
         shell: msys2 {0}
         run: |
-          g++ -std=c++17 main.cpp MenuState.cpp GameState.cpp RulesState.cpp SettingsState.cpp ^
-          -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio ^
-          -o app.exe
+          g++ -std=c++17 -O2 -o gorodki.exe \
+            main.cpp MenuState.cpp GameState.cpp RulesState.cpp SettingsState.cpp \
+            -I/mingw64/include \
+            -L/mingw64/lib \
+            -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio \
+            -Wno-unused-result
 
-      # 4. Загружаем exe
-      - name: Upload artifact
+      - name: Upload Windows executable
         uses: actions/upload-artifact@v4
         with:
-          name: gorodki-build
-          path: app.exe
+          name: gorodki-windows
+          path: gorodki.exe
+          if-no-files-found: error
