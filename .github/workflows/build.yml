@@ -2,32 +2,37 @@ name: Build SFML Project
 
 on:
   push:
-  workflow_dispatch:
+  pull_request:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Install MSYS2
-      uses: msys2/setup-msys2@v2
-      with:
-        update: true
-        install: mingw-w64-x86_64-gcc mingw-w64-x86_64-sfml
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            g++ \
+            make \
+            libsfml-dev
 
-    - name: Build project
-      shell: msys2 {0}
-      run: |
-        g++ -std=c++17 main.cpp MenuState.cpp GameState.cpp RulesState.cpp SettingsState.cpp \
-        -I/mingw64/include \
-        -L/mingw64/lib \
-        -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio \
-        -o gorodki.exe
+      - name: Build project
+        run: |
+          g++ -std=c++17 \
+            main.cpp \
+            MenuState.cpp \
+            GameState.cpp \
+            RulesState.cpp \
+            SettingsState.cpp \
+            -o city_game \
+            -lsfml-graphics -lsfml-window -lsfml-system
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: gorodki-exe
-        path: gorodki.exe
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: city_game
+          path: city_game
