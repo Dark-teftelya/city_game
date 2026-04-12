@@ -26,13 +26,13 @@ jobs:
             unzip
 
       # ====== Download SFML 2.6.2 ======
-      - name: Download SFML
+      - name: Download SFML (stable mirror)
         shell: pwsh
         run: |
           Invoke-WebRequest `
-            -Uri "https://www.sfml-dev.org/files/SFML-2.6.2-windows-gcc-12.2.0-mingw-64-bit.zip" `
+            -Uri "https://github.com/SFML/SFML/releases/download/2.6.2/SFML-2.6.2-windows-gcc-12.2.0-mingw-64-bit.zip" `
             -OutFile sfml.zip
-
+      
           Expand-Archive sfml.zip -DestinationPath sfml
 
       # ====== Build project ======
