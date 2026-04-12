@@ -25,11 +25,11 @@ jobs:
       - name: Build project
         shell: msys2 {0}
         run: |
-          g++ -std=c++17 -O2 -o gorodki.exe \
-            main.cpp MenuState.cpp GameState.cpp RulesState.cpp SettingsState.cpp \
-            -I/mingw64/include \
-            -L/mingw64/lib \
-            -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio \
+          g++ -std=c++17 -O2 -static -o gorodki.exe ^
+            main.cpp MenuState.cpp GameState.cpp RulesState.cpp SettingsState.cpp ^
+            -I/mingw64/include ^
+            -L/mingw64/lib ^
+            -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio ^
             -Wno-unused-result
 
       - name: Upload Windows executable
