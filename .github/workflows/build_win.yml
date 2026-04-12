@@ -1,4 +1,4 @@
-name: Build SFML App
+name: Build SFML App (stable)
 
 on: [push, pull_request]
 
@@ -7,24 +7,22 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Install vcpkg
+      - name: Download SFML 2.6.2
         run: |
-          git clone https://github.com/microsoft/vcpkg
-          .\vcpkg\bootstrap-vcpkg.bat
-          .\vcpkg\vcpkg install sfml:x64-windows
+          curl -L -o sfml.zip https://www.sfml-dev.org/files/SFML-2.6.2-windows-gcc-12.2.0-mingw-64-bit.zip
+          tar -xf sfml.zip
 
-      - name: Build project
+      - name: Build
         run: |
-          g++ -std=c++17 main.cpp SettingsState.cpp -o app.exe `
-          -I vcpkg\installed\x64-windows\include `
-          -L vcpkg\installed\x64-windows\lib `
+          g++ -std=c++17 main.cpp MenuState.cpp GameState.cpp RulesState.cpp SettingsState.cpp -o app.exe ^
+          -ISFML-2.6.2/include ^
+          -LSFML-2.6.2/lib ^
           -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
-          name: my-app
+          name: gorodki
           path: app.exe
