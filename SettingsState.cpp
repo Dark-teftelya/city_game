@@ -36,11 +36,12 @@ void SettingsState::handleInput(sf::Event& event) {
         if (event.key.code == sf::Keyboard::Left || event.key.code == sf::Keyboard::Right) {
             if (selectedIndex == 0) {
                 manager.config.soundEnabled = !manager.config.soundEnabled;
-            }
-
-            if (selectedIndex == 1) {
+            } else if (selectedIndex == 1) {
+                // Цикл разрешений
                 if (manager.config.resolution.width == 800)
                     manager.config.resolution = sf::VideoMode(1024, 768);
+                else if (manager.config.resolution.width == 1024)
+                    manager.config.resolution = sf::VideoMode(1280, 720);
                 else
                     manager.config.resolution = sf::VideoMode(800, 600);
             }
@@ -48,8 +49,6 @@ void SettingsState::handleInput(sf::Event& event) {
         }
 
         if (event.key.code == sf::Keyboard::Enter) {
-            // Применяем настройки сразу
-            // (в main.cpp музыка и окно будут обновлены при следующем цикле)
             manager.setState(std::make_unique<MenuState>(manager));
         }
 
@@ -64,5 +63,8 @@ void SettingsState::draw(sf::RenderWindow& window) {
     sf::Text title(L"НАСТРОЙКИ", font, 40);
     title.setPosition(280.f, 80.f);
     window.draw(title);
-    for (const auto& t : options) window.draw(t);
+
+    for (const auto& t : options) {
+        window.draw(t);
+    }
 }
