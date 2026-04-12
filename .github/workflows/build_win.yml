@@ -1,7 +1,7 @@
-name: Build SFML Project
+name: Build SFML Project (Windows EXE)
 
 on:
- push:
+  push:
   pull_request:
 
 jobs:
@@ -12,27 +12,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install SFML via vcpkg
+      - name: Install vcpkg and SFML
         run: |
-          git clone https://github.com/microsoft/vcpkg
-          cd vcpkg
-          .\bootstrap-vcpkg.bat
-          .\vcpkg install sfml:x64-windows
+          git clone https://github.com/microsoft/vcpkg C:\vcpkg
+          C:\vcpkg\bootstrap-vcpkg.bat
+          C:\vcpkg\vcpkg install sfml:x64-windows
 
       - name: Build project
-        run: |
-          g++ -std=c++17 ^
-            main.cpp ^
-            MenuState.cpp ^
-            GameState.cpp ^
-            RulesState.cpp ^
-            SettingsState.cpp ^
-            -o city_game.exe ^
-            -IC:\vcpkg\installed\x64-windows\include ^
-            -LC:\vcpkg\installed\x64-windows\lib ^
-            -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
+        run: g++ -std=c++17 main.cpp MenuState.cpp GameState.cpp RulesState.cpp SettingsState.cpp -o city_game.exe -IC:\vcpkg\installed\x64-windows\include -LC:\vcpkg\installed\x64-windows\lib -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
 
-      - name: Upload build
+      - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
           name: city_game.exe
