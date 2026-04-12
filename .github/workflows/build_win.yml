@@ -10,24 +10,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install SFML 2.6
-        shell: bash
+      - name: Install vcpkg
         run: |
-          git clone --branch 2.6.x https://github.com/SFML/SFML.git
-          cd SFML
-          mkdir build
-          cd build
-          cmake .. -DCMAKE_INSTALL_PREFIX=../../SFML-install -DBUILD_SHARED_LIBS=OFF
-          cmake --build . --target install --config Release
+          git clone https://github.com/microsoft/vcpkg
+          .\vcpkg\bootstrap-vcpkg.bat
+          .\vcpkg\vcpkg install sfml:x64-windows
 
       - name: Build project
-        shell: bash
         run: |
-          g++ -std=c++17 main.cpp SettingsState.cpp \
-            -ISFML-install/include \
-            -LSFML-install/lib \
-            -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio \
-            -o app.exe
+          g++ -std=c++17 main.cpp SettingsState.cpp ^
+          -I vcpkg\installed\x64-windows\include ^
+          -L vcpkg\installed\x64-windows\lib ^
+          -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio ^
+          -o app.exe
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4
