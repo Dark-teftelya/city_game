@@ -10,27 +10,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install dependencies (MinGW + CMake)
-        run: |
-          choco install mingw -y
-          choco install cmake -y
-
-      - name: Clone SFML 2.6
+      - name: Install SFML 2.6
+        shell: bash
         run: |
           git clone --branch 2.6.x https://github.com/SFML/SFML.git
           cd SFML
           mkdir build
           cd build
-          cmake .. -G "MinGW Makefiles" -DCMAKE_INSTALL_PREFIX=../../SFML-install
-          cmake --build . --target install
+          cmake .. -DCMAKE_INSTALL_PREFIX=../../SFML-install -DBUILD_SHARED_LIBS=OFF
+          cmake --build . --target install --config Release
 
       - name: Build project
+        shell: bash
         run: |
-          g++ -std=c++17 main.cpp SettingsState.cpp ^
-          -I SFML-install/include ^
-          -L SFML-install/lib ^
-          -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio ^
-          -o app.exe
+          g++ -std=c++17 main.cpp SettingsState.cpp \
+            -ISFML-install/include \
+            -LSFML-install/lib \
+            -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio \
+            -o app.exe
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4
