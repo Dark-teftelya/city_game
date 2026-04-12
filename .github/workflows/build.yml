@@ -1,0 +1,19 @@
+name: Build EXE
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: g++ -std=c++17 main.cpp MenuState.cpp GameState.cpp RulesState.cpp SettingsState.cpp -o gorodki.exe
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gorodki
+          path: gorodki.exe
