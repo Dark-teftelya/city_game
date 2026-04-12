@@ -1,4 +1,4 @@
-name: Build SFML App
+name: Build SFML App (Windows)
 
 on:
   push:
@@ -9,44 +9,29 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout code
+      # 1. Забираем код
+      - name: Checkout
         uses: actions/checkout@v4
 
-      # ====== Install MinGW toolchain ======
-      - name: Setup MSYS2 + MinGW
+      # 2. Устанавливаем MSYS2 + SFML (САМЫЙ СТАБИЛЬНЫЙ СПОСОБ)
+      - name: Setup MSYS2 and install SFML
         uses: msys2/setup-msys2@v2
         with:
           update: true
           install: >-
             mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-cmake
-            mingw-w64-x86_64-make
-            mingw-w64-x86_64-ninja
-            curl
-            unzip
+            mingw-w64-x86_64-sfml
 
-      # ====== Download SFML 2.6.2 ======
-      - name: Download SFML (stable mirror)
-        shell: pwsh
-        run: |
-          Invoke-WebRequest `
-            -Uri "https://github.com/SFML/SFML/releases/download/2.6.2/SFML-2.6.2-windows-gcc-12.2.0-mingw-64-bit.zip" `
-            -OutFile sfml.zip
-      
-          Expand-Archive sfml.zip -DestinationPath sfml
-
-      # ====== Build project ======
+      # 3. Сборка проекта
       - name: Build project
         shell: msys2 {0}
         run: |
           g++ -std=c++17 main.cpp MenuState.cpp GameState.cpp RulesState.cpp SettingsState.cpp ^
-          -Isfml/SFML-2.6.2/include ^
-          -LsFML-2.6.2/lib ^
           -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio ^
           -o app.exe
 
-      # ====== Upload artifact ======
-      - name: Upload EXE
+      # 4. Загружаем exe
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: gorodki-build
