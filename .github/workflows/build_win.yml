@@ -1,28 +1,35 @@
-name: Build SFML Project (Windows EXE)
+name: Build SFML App
 
-on:
-  push:
-  pull_request:
+on: [push, pull_request]
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install vcpkg and SFML
+      - name: Install SFML 2
         run: |
-          git clone https://github.com/microsoft/vcpkg C:\vcpkg
-          C:\vcpkg\bootstrap-vcpkg.bat
-          C:\vcpkg\vcpkg install sfml:x64-windows
+          git clone https://github.com/SFML/SFML.git
+          cd SFML
+          git checkout 2.6.x
+          mkdir build
+          cd build
+          cmake -G "MinGW Makefiles" -DCMAKE_INSTALL_PREFIX=../../SFML-install ..
+          cmake --build . --target install
 
       - name: Build project
-        run: g++ -std=c++17 main.cpp MenuState.cpp GameState.cpp RulesState.cpp SettingsState.cpp -o city_game.exe -IC:\vcpkg\installed\x64-windows\include -LC:\vcpkg\installed\x64-windows\lib -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
+        run: |
+          g++ -std=c++17 main.cpp SettingsState.cpp \
+          -I SFML-install/include \
+          -L SFML-install/lib \
+          -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio \
+          -o app.exe
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
-          name: city_game.exe
-          path: city_game.exe
+          name: my-app
+          path: app.exe
