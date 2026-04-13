@@ -13,12 +13,11 @@ public:
 
     void setState(std::unique_ptr<State> newState) {
         currentState = std::move(newState);
-
         if (!currentState)
             running = false;
     }
 
-    void handleInput(sf::Event& event) {
+    void handleInput(const sf::Event& event) {   // ← const
         if (currentState)
             currentState->handleInput(event);
     }

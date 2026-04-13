@@ -3,7 +3,7 @@
 #include <memory>
 #include "GameConfig.h"
 
-class StateManager; // можно оставить forward declaration ТОЛЬКО тут
+class StateManager;
 
 class State {
 protected:
@@ -13,7 +13,7 @@ public:
     State(StateManager& m) : manager(m) {}
     virtual ~State() = default;
 
-    virtual void handleInput(sf::Event& event) = 0;
+    virtual void handleInput(const sf::Event& event) = 0;  // ← const добавлено
     virtual void update(float dt) = 0;
     virtual void draw(sf::RenderWindow& window) = 0;
 };

@@ -6,64 +6,49 @@
 #include "StateManager.h"
 #include <memory>
 
+// constexpr float PI = 3.14159265358979323846f;
 int main() {
-    // 1. Создаём конфиг первым
     GameConfig config;
 
-    // 2. Создаём окно с текущим разрешением
-    sf::RenderWindow window(config.resolution, "Gorodki");
+    sf::RenderWindow window(sf::VideoMode(config.resolution), "Gorodki");
     window.setFramerateLimit(60);
 
-    // 3. Музыка
     sf::Music music;
     if (music.openFromFile("media/all_mix.mp3")) {
-        music.setLoop(true);
+        music.setLooping(true);           // ← было setLoop
         music.setVolume(config.soundEnabled ? 70.f : 0.f);
         music.play();
     }
 
-    // 4. StateManager
     StateManager manager;
-    manager.config = config;                    // копируем настройки
-
+    manager.config = config;
     manager.setState(std::make_unique<MenuState>(manager));
 
     sf::Clock clock;
 
-    sf::VideoMode lastResolution = config.resolution;
-    bool lastSoundEnabled = config.soundEnabled;
-
     while (window.isOpen() && manager.isRunning()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
+        // Новый способ событий в SFML 3
+        while (const std::optional<sf::Event> event = window.pollEvent()) {
+            if (event->is<sf::Event::Closed>()) {
                 window.close();
             }
-            manager.handleInput(event);
+            manager.handleInput(*event);   // передаём event
         }
 
         float dt = clock.restart().asSeconds();
         manager.update(dt);
 
-        window.clear(sf::Color::Black);
+        window.clear();
         manager.draw(window);
         window.display();
 
-        // Применяем изменение разрешения
-        if (manager.config.resolution.width != lastResolution.width ||
-            manager.config.resolution.height != lastResolution.height) {
-
-            lastResolution = manager.config.resolution;
-
-            window.create(sf::VideoMode(lastResolution.width, lastResolution.height), "Gorodki");
+        // resize
+        if (manager.config.resolution != window.getSize()) {
+            window.create(sf::VideoMode(manager.config.resolution), "Gorodki");
             window.setFramerateLimit(60);
         }
 
-        // Применяем изменение звука
-        if (manager.config.soundEnabled != lastSoundEnabled) {
-            lastSoundEnabled = manager.config.soundEnabled;
-            music.setVolume(lastSoundEnabled ? 70.f : 0.f);
-        }
+        music.setVolume(manager.config.soundEnabled ? 70.f : 0.f);
     }
 
     return 0;

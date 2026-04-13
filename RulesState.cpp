@@ -3,9 +3,13 @@
 #include "MenuState.h"
 #include <memory>
 
-RulesState::RulesState(StateManager& manager) : State(manager) {
-    font.loadFromFile("media/arial.ttf");
-    message.setFont(font);
+RulesState::RulesState(StateManager& manager) : State(manager),
+    message(font, "", 22)   // ← исправлено
+{
+    if (!font.openFromFile("media/arial.ttf")) {
+    // fallback или ошибка
+    }
+
     message.setString(
         L"ПРАВИЛА ИГРЫ «ГОРОДКИ»\n\n"
         L"Цель игры:\n"
@@ -21,14 +25,15 @@ RulesState::RulesState(StateManager& manager) : State(manager) {
         L"4. На каждую фигуру 1–2 броска\n\n"
         L"ESC — вернуться в меню"
     );
-    message.setCharacterSize(22);
     message.setFillColor(sf::Color::White);
-    message.setPosition(70.f, 40.f);
+    message.setPosition({70.f, 40.f});
 }
 
-void RulesState::handleInput(sf::Event& event) {
-    if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
-        manager.setState(std::make_unique<MenuState>(manager));
+void RulesState::handleInput(const sf::Event& event) {
+    if (const auto* keyEvent = event.getIf<sf::Event::KeyPressed>()) {
+        if (keyEvent->code == sf::Keyboard::Key::Escape) {
+            manager.setState(std::make_unique<MenuState>(manager));
+        }
     }
 }
 

@@ -8,7 +8,7 @@ private:
     sf::Text message;
 public:
     RulesState(StateManager& manager);
-    void handleInput(sf::Event& event) override;
+    void handleInput(const sf::Event& event) override;
     void update(float dt) override;
     void draw(sf::RenderWindow& window) override;
 };

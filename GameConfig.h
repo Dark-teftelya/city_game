@@ -1,8 +1,10 @@
 #pragma once
-#include <SFML/Graphics.hpp>
+#include <SFML/System/Vector2.hpp>
 
 struct GameConfig {
     bool soundEnabled = true;
-    sf::VideoMode resolution = sf::VideoMode(800, 600);
+
+    sf::Vector2u resolution = {800, 600};
+
     float musicVolume = 70.f;
 };

@@ -39,7 +39,7 @@ private:
 
 public:
     GameState(StateManager& manager);
-    void handleInput(sf::Event& event) override;
+    void handleInput(const sf::Event& event) override;   // ← const добавлено
     void update(float dt) override;
     void draw(sf::RenderWindow& window) override;
 };
